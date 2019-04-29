@@ -3,25 +3,45 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using ProAgil.API.Model;
+using ProAgil.API.Data;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace ProAgil.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase
-    {
+    {        
+        public DataContext _context { get; }
+
+        public ValuesController(DataContext context)
+        {
+            _context = context;            
+        }
+
         // GET api/values
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public async Task<IActionResult> Get()
         {
-            return new string[] { "value1", "value2" };
+            try
+            {
+                var results = await _context.Eventos.ToListAsync();
+                return Ok(results);    
+            }
+            catch (System.Exception)
+            {                
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Banco de Dados Falhou");
+            }            
         }
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            return "value";
+            var results = await _context.Eventos.FirstOrDefaultAsync(x => x.EventoId == id);
+             return Ok(results);   
         }
 
         // POST api/values
